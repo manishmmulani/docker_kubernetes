@@ -30,3 +30,13 @@ To run named container and expose app on a dynamic port (not on fixed port)
 
 To know the port, either run 'docker ps' or 'docker port redisDynamic'
 
+
+# Docker Images
+
+alpine version of nginx is the BASE image for the image  we are trying to build
+
+##DockerFile
+FROM nginx:alpine
+COPY . /usr/share/nginx/html
+
+> docker build -t webserver-image:v1 .
