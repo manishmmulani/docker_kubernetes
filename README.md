@@ -36,9 +36,10 @@ To know the port, either run 'docker ps' or 'docker port redisDynamic'
 alpine version of nginx is the BASE image for the image  we are trying to build
 
 ## DockerFile nginx
+```
 FROM nginx:alpine
-
 COPY . /usr/share/nginx/html
+```
 
 > docker build -t webserver-image:v1 .
 
@@ -50,18 +51,15 @@ COPY . /usr/share/nginx/html
 - Difference b/w RUN and CMD : RUN is executed during building the image. CMD can be overriden using docker run and CMD will be executed within the container to launch the app in general.
 
 ## DockerFile nodejs app
+```
 FROM node:10-alpine
-
 RUN mkdir -p /src/app
-
 WORKDIR "/src/app"
 
 COPY package.json /src/app/package.json 
-
 RUN npm install
-
 COPY . /src/app/
-
 EXPOSE 3000
 
 CMD ["npm", "start"]
+```
