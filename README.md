@@ -63,3 +63,51 @@ EXPOSE 3000
 
 CMD ["npm", "start"]
 ```
+
+## Data Containers
+
+-v for where other containers read / write data
+busybox - base container 
+
+> docker create -v /config --name dataContainer busybox
+
+Copy config.conf from client directory to dataContainer
+
+> docker cp config.conf dataContainer:/config/
+
+Now launch a new container (ubuntu image) and mount the volume from dataContainer
+
+> docker run --volumes-from dataContainer ubuntu ls /config
+
+config.conf
+
+Exporting dataContainer into a tar file to be able to move to a  different machine
+
+> docker export dataContainer > dataContainer.tar
+
+Importing tar
+
+> docker import dataContainer.tar
+
+## Container linking
+
+eg: Your app needs to connect to data store which is running on another container
+
+> docker run -d --name redis-server redis
+
+> docker run --link redis-server:alias alpine env
+```
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=9c470caa0608
+REDI_PORT=tcp://172.18.0.2:6379
+REDI_PORT_6379_TCP=tcp://172.18.0.2:6379
+REDI_PORT_6379_TCP_ADDR=172.18.0.2
+REDI_PORT_6379_TCP_PORT=6379
+REDI_PORT_6379_TCP_PROTO=tcp
+REDI_NAME=/alpine-app/redi
+REDI_ENV_GOSU_VERSION=1.10
+REDI_ENV_REDIS_VERSION=4.0.11
+REDI_ENV_REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-4.0.11.tar.gz
+REDI_ENV_REDIS_DOWNLOAD_SHA=fc53e73ae7586bcdacb4b63875d1ff04f68c5474c1ddeda78f00e5ae2eed1bbb
+HOME=/root
+```
