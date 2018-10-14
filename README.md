@@ -145,3 +145,25 @@ $ docker run --link redis-server:redi alpine ping -c 1 redi
 PING redi (172.18.0.2): 56 data bytes
 64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.136 ms
 ```
+
+## Docker Network of Container (alternate to linking)
+
+> docker network create backend-network
+
+> docker run -d --name redis-server --net backend-network redis
+
+/etc/resolv.conf contains Embedded DNS server's ip. This DNS server is embedded in all containers which knows the ip corresponding to each container
+
+> docker run --net backend-network alpine cat /etc/resolv.conf 
+
+> docker run --net backend-network alpine ping -c 1 redis-server
+
+> docker network create frontend-network
+
+> docker network connect frontend-network redis-server
+
+> docker network ls
+
+> docker network inspect frontend-network
+
+> docker network disconnect frontend-network redis-server
