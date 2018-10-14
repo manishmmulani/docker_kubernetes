@@ -207,3 +207,18 @@ Default behavior : no restart
 restart attempt thrice : --restart on-failure:3
 restart unlimited times (always) : --restart always
 
+## Load Balancing using NGINX Proxy (jwilder)
+
+Based on https://github.com/jwilder/nginx-proxy
+
+> docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro -e DEFAULT_HOST example.com --name nginx jwilder/nginx-proxy
+
+> curl http://docker (returns 503 as there's no server configured)
+
+> docker run -d -p 80 -e VIRTUAL_HOST example.com katacoda/docker-http-server (registers to nginx proxy)
+
+> curl http://docker (returns the host name where http server is running)
+
+> docker run -d -p 80 -e VIRTUAL_HOST example.com katacoda/docker-http-server (registers to nginx proxy)
+
+subsequent calls to example.com would be proxied to the above servers in round-robin fashion
