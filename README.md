@@ -167,3 +167,33 @@ PING redi (172.18.0.2): 56 data bytes
 > docker network inspect frontend-network
 
 > docker network disconnect frontend-network redis-server
+
+## Persisting Data using Data Volumes
+
+> docker run -v /docker/redis-data:/data --name r1 -d redis --appendonly yes
+
+Pipe the redis data into r1 redis instance
+
+> echo "SET Key0 Value0" | docker exec -i r1 redis-cli --pipe
+
+> ls /docker/redis-data
+```
+appendonly.aof
+```
+
+Use the directory in another container
+
+> docker run -v /docker/redis-data:/backup ubuntu ls /backup
+```
+appendonly.aof
+```
+
+### Sharing volumes
+
+Another alternative to above is as below. New container can access /data volume of r1 which is actually mapped to /docker/redis-data
+
+> docker run --volumes-from r1 -it  ubuntu ls /data
+
+### Readonly volumes (ro)
+
+> docker run -v /docker/redis-data:/data:ro -it ubuntu rm -rf /data
