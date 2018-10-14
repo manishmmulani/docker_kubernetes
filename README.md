@@ -297,3 +297,35 @@ From the manager node, enter below to view the status of the cluster
 
 Containers registered to the above skynet network will be able to communicate to each other regardless of which host they belong to. [VXLAN - Virtual Extensible LAN]
 
+### Create a service with two replicas of http server load-balanced and spread across evenly on the network 
+
+It internally creates and manages containers on nodes in the network
+
+> docker service create --name http --network skynet --replicas 2 -p 80:80 katacoda/docker-http-server
+
+> docker service ls
+
+list containers on each host using 
+
+> docker ps
+
+> curl docker (returns the host which served the request, run multiple times to see the load-balancing working in round-robin fashion)
+
+Key features of a service
+- Load balanced app
+- create required number of replicas
+- Manage containers in the network
+- Scaling
+
+> docker service ps http (inspect the state and health of cluster and running apps)
+
+### Scale the service
+
+> docker service --help
+
+> docker service scale http=5
+
+> docker service ps http (you will see 3 containers running on one host and 2 containers on the other)
+
+
+
