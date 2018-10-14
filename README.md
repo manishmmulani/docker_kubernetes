@@ -258,3 +258,42 @@ web:
 > docker-compose stop (stops all containers)
 
 > docker-compose rm (removes all containers)
+
+## Container stats (CPU, Memory, Network IO)
+
+> docker stats nginx (one particular container)
+
+> docker ps -q | xargs docker stats (all container stats)
+
+
+# Swarm Mode
+
+Turn single host docker host into multi-host Docker Swarm Mode. By default, docker works as an isolated single-node. All containers are only deployed onto the engine. Swarm Mode turns it into a multi-host cluster-aware engine.
+
+### Managers and Workers 
+Managers schedule which containers to run where. Workers execute a bunch of tasks. Managers are also workers. 
+
+> docker swarm --help
+
+> docker swarm init
+
+- Node initializing the swarm mode becomes the manager of the cluster.
+
+- Note down the token for adding nodes to the swarm
+
+From another node, join the cluster as below
+
+> token=$(docker -H 172.17.0.2:2345 swarm join-token -q worker) && echo $token
+
+> docker swarm join 172.17.0.2:2377 --token $token
+
+From the manager node, enter below to view the status of the cluster
+
+> docker node ls
+
+### Overlay Network
+
+> docker network create -d overlay skynet
+
+Containers registered to the above skynet network will be able to communicate to each other regardless of which host they belong to. [VXLAN - Virtual Extensible LAN]
+
