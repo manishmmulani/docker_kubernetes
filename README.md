@@ -229,3 +229,32 @@ Based on https://github.com/jwilder/nginx-proxy
 subsequent calls to example.com would be proxied to the above servers in round-robin fashion
 
 > docker exec nginx cat /etc/nginx/conf.d/default.conf (to view the automatically updated configuration of nginx proxy based on docker-gen)
+
+## Container Oschestration using Docker Compose
+
+docker-compose.yaml
+```
+web:
+  build .
+  links:
+    - redis-server
+  ports:
+    - "3000"
+    
+ redis-server:
+   image: redis:alpine
+   volumes:
+     - /var/redis/data:/data
+```
+
+> docker-compose up -d
+
+> docker-compose ps
+
+> docker-compose scale web=3 (starts two more containers to scale up)
+
+> docker-compose scale web=1 (stops two containers to scale down)
+
+> docker-compose stop (stops all containers)
+
+> docker-compose rm (removes all containers)
