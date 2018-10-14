@@ -197,3 +197,13 @@ Another alternative to above is as below. New container can access /data volume 
 ### Readonly volumes (ro)
 
 > docker run -v /docker/redis-data:/data:ro -it ubuntu rm -rf /data
+
+## Logging 
+To redirect logs to syslog use --log-driver syslog
+To disable logging use --log-driver none
+
+## Restart containers on crash (exit <> 0)
+Default behavior : no restart
+restart attempt thrice : --restart on-failure:3
+restart unlimited times (always) : --restart always
+
