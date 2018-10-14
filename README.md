@@ -199,12 +199,17 @@ Another alternative to above is as below. New container can access /data volume 
 > docker run -v /docker/redis-data:/data:ro -it ubuntu rm -rf /data
 
 ## Logging 
+
 To redirect logs to syslog use --log-driver syslog
+
 To disable logging use --log-driver none
 
 ## Restart containers on crash (exit <> 0)
+
 Default behavior : no restart
+
 restart attempt thrice : --restart on-failure:3
+
 restart unlimited times (always) : --restart always
 
 ## Load Balancing using NGINX Proxy (jwilder)
@@ -222,3 +227,5 @@ Based on https://github.com/jwilder/nginx-proxy
 > docker run -d -p 80 -e VIRTUAL_HOST example.com katacoda/docker-http-server (registers to nginx proxy)
 
 subsequent calls to example.com would be proxied to the above servers in round-robin fashion
+
+> docker exec nginx cat /etc/nginx/conf.d/default.conf (to view the automatically updated configuration of nginx proxy based on docker-gen)
