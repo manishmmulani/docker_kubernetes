@@ -27,3 +27,18 @@ To know the port through which container is exposed
 >> Returns the host that processed the request
 
 
+Initializing a Cluster
+> kubeadm init --token=102952.1a7dd4cc8d1f4cc5 --kubernetes-version $(kubeadm version -o short)
+
+> sudo cp /etc/kubernetes/admin.conf $HOME/
+> sudo chown $(id -u):$(id -g) $HOME/admin.conf
+> export KUBECONFIG=$HOME/admin.conf
+
+Below lists the token. For new nodes to join the cluster, they should provide the right token
+> kubeadmin token list
+
+Server ip and port can be obtained from admin.conf file above
+> kubeadmin join --token=102952.1a7dd4cc8d1f4cc5 172.17.0.138:6443
+
+
+
