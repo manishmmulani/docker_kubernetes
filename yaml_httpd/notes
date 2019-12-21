@@ -1,0 +1,16 @@
+Visual Code Extensions - kubernetes and yaml
+
+just type 'deployment' and auto-complete will load template for 'Kubernetes Deployment'
+just type 'service' and auto-complete will load template for 'Kubernetes Service'
+
+CTRL + SHIFT + P 
+> Kubernetes CREATE cluster
+> Kubernetes Apply (on each deployment and service yaml file)
+> Kubernetes Get (on each yaml)
+
+> Kubernetes describe service my-apache-service
+
+minikube service list
+
+wget http://192.168.39.12:31838 will download index.html "It works"
+

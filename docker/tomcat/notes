@@ -1,0 +1,2 @@
+// From docker/tomcat directory, run below
+docker build --build-arg JAR_FILE=springboot-h2-jpa-0.0.1-SNAPSHOT.jar -t manishmmulani/spring-boot-app-h2-jpa .

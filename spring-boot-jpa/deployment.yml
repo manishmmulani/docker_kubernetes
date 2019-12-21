@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-jpa
+spec:
+  selector:
+    matchLabels:
+      app: spring-boot-jpa
+  template:
+    metadata:
+      labels:
+        app: spring-boot-jpa
+    spec:
+      containers:
+      - name: spring-boot-jpa
+        image: manishmmulani/spring-boot-app-h2-jpa
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
