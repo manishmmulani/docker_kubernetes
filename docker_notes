@@ -1,0 +1,213 @@
+DOCKER CHEAT SHEET - https://github.com/wsargent/docker-cheat-sheet#dockerfile
+
+
+http://blog.thoward37.me/articles/where-are-docker-images-stored/
+
+$ sudo cat /var/lib/docker/repositories | python -mjson.tool
+
+> sudo systemctl start docker
+
+> sudo systemctl enable docker
+
+The first command starts the Docker service. The second command sets Docker to run at startup.
+
+
+
+Terminologies
+----------------------------------------------------------------------
+DockerFile
+Docker image
+Docker Container (Runtime environment)
+Docker Hub / repositories
+
+Docker Engine : Client-Server architecture
+
+Client - can be on same machine or different as that of Server
+Server - Docker daemon that can provide containers 
+
+Client will interact with Server via CLI or REST APIs
+
+
+COMPONENETS
+----------------------------------------------------------------------
+DOCKER images
+DOCKER containers
+DOCKER volumes
+
+
+Parallels for container orchestration
+----------------------------------------------------------------------
+DOCKER COMPOSE / DOCKER STACK 
+DOCKER SWARM
+KUBERNETES
+
+
+Installation
+----------------------------------------------------------------------
+
+Post installation 
+> sudo service docker start   ---- to start the daemon (server)
+> sudo docker info            ---- will output details if docker daemon is running
+
+To avoid sudo'ing - follow instructions in https://docs.docker.com/install/linux/linux-postinstall/  
+Add group 'docker' and add users to it 
+> sudo usermod -aG docker $USER
+
+and re-login 
+
+
+Basic commands 
+----------------------------------------------------------------------
+docker version (note the diff b/w docker --version)
+docker --help 
+docker images --help
+docker rm (remove container)
+docker rmi (remove image)
+docker stats  (stats of running container)
+docker system df (disk usage)
+docker stop CONTAINER_ID (to stop the running container)
+docker system prune (remove unused / dangling images for which there are no running containers)
+
+
+docker images
+docker ps   -- list all running containers 
+docker run hello-world  -- looks up in local repo else gets the image from public hub 
+
+root@mulani-g7-7588:/var/lib/docker/image/overlay2# cat repositories.json | python3 -mjson.tool
+
+
+root@mulani-g7-7588:/var/lib/docker/image/overlay2/imagedb/content/sha256# cat fce289e99eb9bca977dae136fbe2a82b6b7d4c372474c9235adc1741675f587e | python3 -mjson.tool
+
+root@mulani-g7-7588:/var/lib/docker# tree
+
+
+> git clone https://github.com/docker/doodle.git
+> cd doodle/cheers2019
+> docker build -t manishmulani/cheers2019 .
+> docker run -it --rm manishmmulani/cheers2019
+> docker login 
+username : manishmmulani
+> docker push
+
+Visit https://hub.docker.com/ to view them
+
+
+Container is a running instance of an Image 
+
+> docker pull ubuntu:18.04
+> docker run -it ubuntu:18.04 --name MyUbuntu bash 
+
+Running a command inside a container 
+
+mulani@mulani-g7-7588:~/work/docker$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+7e59a7dbbc42        ubuntu:18.04        "/bin/bash"         9 seconds ago       Up 8 seconds                            clever_bose
+
+mulani@mulani-g7-7588:~/work/docker$ docker exec -it 7e59a7dbbc42 ls
+bin   dev  home  lib64	mnt  proc  run	 srv  tmp  var
+boot  etc  lib	 media	opt  root  sbin  sys  usr
+
+To know the entire information about the running container
+> docker inspect 7e59a7dbbc42
+
+> docker rmi -f ubuntu:18.04
+
+> docker run -it -p 8080:80 --name MyNingx1 nginx
+> docker run -it -p 8081:80 nginx 
+> docker exec -it MyNinx1 bash
+
+root@960e641d8184:/# cd usr/share/nginx/html
+root@960e641d8184:/usr/share/nginx/html# echo "<H1>hello world</H1>" > comeon.html
+root@960e641d8184:/usr/share/nginx/html# ls
+50x.html  comeon.html  index.html
+root@960e641d8184:/usr/share/nginx/html#
+
+mulani@mulani-g7-7588:~/work/docker$ docker diff MyNingx1 
+C /usr
+C /usr/share
+C /usr/share/nginx
+C /usr/share/nginx/html
+A /usr/share/nginx/html/comeon.html
+C /var
+C /var/cache
+C /var/cache/nginx
+A /var/cache/nginx/client_temp
+A /var/cache/nginx/fastcgi_temp
+A /var/cache/nginx/proxy_temp
+A /var/cache/nginx/scgi_temp
+A /var/cache/nginx/uwsgi_temp
+C /root
+A /root/.bash_history
+C /run
+A /run/nginx.pid
+mulani@mulani-g7-7588:~/work/docker$ docker commit MyNingx1
+
+
+
+-- 80 is the port within the container. 8080 and 8081 are ports on the host 
+
+> docker top <container_id>
+> docker stats 
+> docker kill <container_id>
+> docker rm <container_id>
+> docker attach <container_id>
+
+> docker history ubuntu:18.04
+
+> vim DockerFile
+FROM nginx
+COPY static /usr/share/nginx/html
+
+> docker build -t manishmmulani/mulani-nginx .
+> docker push manishmmulani/mulani-nginx
+> docker run -it --name MulaniWebsite -p 9080:80 manishmmulani/mulani-nginx
+
+
+DOCKER VOLUMES - for sharing data between containers to maintain state
+
+> docker volume create myjenkins
+> docker run -it --name MyJenkins -p 8080:8080 -p 50000:50000 -v myjenkins:/var/jenkins_home jenkins
+> docker volume myjenkins inspect 
+
+DOCKER FILES - Dockerfile
+
+FROM scratch # empty image on docker hub
+
+FROM ubuntu
+RUN apt-get update # runs during docker build 
+CMD ["echo", "hello from my first image"]  # runs when container is created 
+
+Note that 'ubuntu' image has CMD ["bin/bash"] as when you run ubuntu image, you get a bash 
+
+
+
+DOCKER COMPOSE
+
+sudo apt install docker-impose 
+
+> vi docker-compose.yml 
+
+version "3"
+
+web:
+  image: nginx
+  ports:
+  - "8080:80"
+
+database:
+  image: redis
+
+
+> docker-compose up -d 
+
+# the above will download nginx and redis images and run the containers
+
+> docker-compose down 
+
+# the above will stop the containers
+
+> docker-compose up -d --scale database=3
+
+# the above will start 1 web container and 3 database containers
+
+

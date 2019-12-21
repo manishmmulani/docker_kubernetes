@@ -1,0 +1,278 @@
+https://www.coursera.org/learn/google-kubernetes-engine/
+https://kubernetes.io/docs/concepts
+
+
+
+Node -> Host where multiple pods can be deployed
+
+Pod -> a single app instance running on Kubernetes cluster. A set of one or more containers (generally primary + sidecars) deployed within a Node. eg: single moss instance
+    -> A Pod encapsulates an app container (or multiple), storage resources, unique network IP
+    -> Smallest unit in a Kubernetes cluster
+    -> In a multi-container pod, containers share the network namespace i.e they can access each other via localhost (ensure to avoid port conflicts)+
+
+Deployment -> Managed set of pods (replicas)  - analogy : 3 moss instances 
+
+Service -> abstraction to give a static IP for an app containers (as pods are ephemeral, they can get killed, scaled up / down etc.)\
+ Types : Loadbalancer, NodePort, ClusterIP
+
+
+
+Kubernetes Objects and APIs
+
+Object -> Spec (provided by user) and Status (supplied and updated by Kubernetes)
+APIs -> create, update, delete, get 
+
+
+
+Labels to identify objects such as pods 
+
+eg: 
+app : moss
+stability : prod 
+
+app : moss
+stability : qa
+
+app : seed
+stability : prod 
+isPrimary : true 
+
+app : seed 
+stability : prod 
+isPrimary : false
+
+
+
+
+Setup :
+
+1. Install kubectl via snap 
+sudo snap install kubectl --classic
+
+
+2. Install kvm or virtualbox - I'm trying kvm
+https://cravencode.com/post/kubernetes/setup-minikube-on-ubuntu-kvm2/
+https://computingforgeeks.com/how-to-run-minikube-on-kvm/
+
+
+a. sudo apt install cpu-checker (for kvm-ok installation)
+mulani@mulani-g7-7588:~$ sudo kvm-ok 
+INFO: /dev/kvm exists
+KVM acceleration can be used
+
+
+b. Hypervisor and virtualization API library
+sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager
+
+With above you will notice that '/usr/bin/libvirtd' service is running as root (enabled by default)
+ps -ef | grep libvirtd
+
+
+mulani@mulani-g7-7588:~$ service libvirtd status
+● libvirtd.service - Virtualization daemon
+   Loaded: loaded (/lib/systemd/system/libvirtd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Tue 2019-10-08 17:49:03 IST; 8min ago
+     Docs: man:libvirtd(8)
+           https://libvirt.org
+ Main PID: 15669 (libvirtd)
+    Tasks: 19 (limit: 32768)
+   CGroup: /system.slice/libvirtd.service
+           ├─15669 /usr/sbin/libvirtd
+           ├─16062 /usr/sbin/dnsmasq --conf-file=/var/lib/libvirt/dnsmasq/default.conf --leasefile-ro --dhcp-script=/usr/lib/libvirt/libvirt_leaseshelper
+           └─16063 /usr/sbin/dnsmasq --conf-file=/var/lib/libvirt/dnsmasq/default.conf --leasefile-ro --dhcp-script=/usr/lib/libvirt/libvirt_leaseshelper
+
+validate virtualization
+
+mulani@mulani-g7-7588:~$ virt-host-validate 
+  QEMU: Checking for hardware virtualization                                 : PASS
+  QEMU: Checking if device /dev/kvm exists                                   : PASS
+  QEMU: Checking if device /dev/kvm is accessible                            : FAIL (Check /dev/kvm is world writable or you are in a group that is allowed to access it)
+  QEMU: Checking if device /dev/vhost-net exists                             : PASS
+  QEMU: Checking if device /dev/net/tun exists                               : PASS
+  QEMU: Checking for cgroup 'memory' controller support                      : PASS
+  QEMU: Checking for cgroup 'memory' controller mount-point                  : PASS
+  QEMU: Checking for cgroup 'cpu' controller support                         : PASS
+  QEMU: Checking for cgroup 'cpu' controller mount-point                     : PASS
+  QEMU: Checking for cgroup 'cpuacct' controller support                     : PASS
+  QEMU: Checking for cgroup 'cpuacct' controller mount-point                 : PASS
+  QEMU: Checking for cgroup 'cpuset' controller support                      : PASS
+  QEMU: Checking for cgroup 'cpuset' controller mount-point                  : PASS
+  QEMU: Checking for cgroup 'devices' controller support                     : PASS
+  QEMU: Checking for cgroup 'devices' controller mount-point                 : PASS
+  QEMU: Checking for cgroup 'blkio' controller support                       : PASS
+  QEMU: Checking for cgroup 'blkio' controller mount-point                   : PASS
+  QEMU: Checking for device assignment IOMMU support                         : PASS
+  QEMU: Checking if IOMMU is enabled by kernel                               : WARN (IOMMU appears to be disabled in kernel. Add intel_iommu=on to kernel cmdline arguments)
+   LXC: Checking for Linux >= 2.6.26                                         : PASS
+   LXC: Checking for namespace ipc                                           : PASS
+   LXC: Checking for namespace mnt                                           : PASS
+   LXC: Checking for namespace pid                                           : PASS
+   LXC: Checking for namespace uts                                           : PASS
+   LXC: Checking for namespace net                                           : PASS
+   LXC: Checking for namespace user                                          : PASS
+   LXC: Checking for cgroup 'memory' controller support                      : PASS
+   LXC: Checking for cgroup 'memory' controller mount-point                  : PASS
+   LXC: Checking for cgroup 'cpu' controller support                         : PASS
+   LXC: Checking for cgroup 'cpu' controller mount-point                     : PASS
+   LXC: Checking for cgroup 'cpuacct' controller support                     : PASS
+   LXC: Checking for cgroup 'cpuacct' controller mount-point                 : PASS
+   LXC: Checking for cgroup 'cpuset' controller support                      : PASS
+   LXC: Checking for cgroup 'cpuset' controller mount-point                  : PASS
+   LXC: Checking for cgroup 'devices' controller support                     : PASS
+   LXC: Checking for cgroup 'devices' controller mount-point                 : PASS
+   LXC: Checking for cgroup 'blkio' controller support                       : PASS
+   LXC: Checking for cgroup 'blkio' controller mount-point                   : PASS
+   LXC: Checking if device /sys/fs/fuse/connections exists                   : PASS
+
+
+3. Install minikube
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo cp minikube /usr/local/bin/ && rm minikube
+
+
+4. Install Docker Machine Driver KVM2
+
+curl -Lo docker-machine-driver-kvm2 https://storage.googleapis.com/minikube/releases/latest/docker-machine-driver-kvm2 && chmod +x docker-machine-driver-kvm2 && sudo cp docker-machine-driver-kvm2 /usr/local/bin/ && rm docker-machine-driver-kvm2
+
+
+5. start minikube on kvm 
+minikube start --vm-driver kvm2 
+
+Ensure to add the user to libvirt group to be able to achieve above without sudo 
+
+> sudo usermod -a -G libvirt $(whoami)
+> newgrp libvirt (to change the Group ID for the session) - not required for subsequent logins
+
+
+mulani@mulani-g7-7588:~$ minikube start --vm-driver kvm2
+😄  minikube v1.4.0 on Ubuntu 18.04
+💡  Tip: Use 'minikube start -p <name>' to create a new cluster, or 'minikube delete' to delete this one.
+🔄  Retriable failure: Error getting state for host: getting connection: looking up domain: virError(Code=42, Domain=10, Message='Domain not found: no domain with matching name 'minikube'')
+🔥  Deleting "minikube" in kvm2 ...
+🔥  Creating kvm2 VM (CPUs=2, Memory=2000MB, Disk=20000MB) ...
+🐳  Preparing Kubernetes v1.16.0 on Docker 18.09.9 ...
+💾  Downloading kubeadm v1.16.0
+💾  Downloading kubelet v1.16.0
+🔄  Relaunching Kubernetes using kubeadm ... 
+⌛  Waiting for: apiserver proxy etcd scheduler controller dns
+🏄  Done! kubectl is now configured to use "minikube"
+
+
+6. Stop minikube 
+minikube stop 
+
+To verify ps -ef | grep kube
+
+
+7. Add kubectl autocompletion for bash shell
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+
+Add minikube autocompletion for bash shell
+minikube completion bash | sudo tee /etc/bash_completion.d/minikube
+
+
+
+8. Experiment
+Minikube dashboard
+
+kubectl get nodes --all-namespaces 
+kubectl get pods --all-namespaces 
+kubectl get service --all-namespaces
+
+kubectl status 
+kubectl cluster-info 
+
+
+9. Deploy hello-node  in default namespace 
+kubectl create deployment hello-node --image=gcr.io/hello-minikube-zero-install/hello-node
+
+kubectl get deployments (optional -o wide to know containers etc.)
+kubectl get pods 
+kubectl get events 
+
+kubectl config view
+
+and https://kubernetes.io/docs/tutorials/hello-minikube/
+
+10. Expose the deployment for external access (access outside the minikube cluster)
+
+kubectl expose deployment hello-node --type=LoadBalancer --port=8080
+
+Now `kubectl get services` would return hello-node 
+
+11. Cloud providers would provision 'external-ip'. However, on minikube, the LoadBalancer type makes the Service accessible via `minikube service` command
+
+minikube service hello-node 
+>> output : http://192.168.39.12:31363
+
+12. Delete service, deployment 
+
+kubectl delete service hello-node
+kubectl delete deployment hello-node 
+
+
+Next steps : 
+https://code.visualstudio.com/docs/azure/kubernetes - use visual studio code extensions for docker and kubernetes
+Understand differences b/w NodePort, Loadbalancer services 
+
+
+13. kubectl describe service hello-node 
+
+
+14. Differences b/w ClusterIP, Loadbalancer, NodePort and Ingress [Exposing service to internet]
+One of the best articles 
+https://www.ovh.com/blog/getting-external-traffic-into-kubernetes-clusterip-nodeport-loadbalancer-and-ingress/
+https://medium.com/google-cloud/kubernetes-nodeport-vs-loadbalancer-vs-ingress-when-should-i-use-what-922f010849e0
+
+
+ClusterIP -> default Kubernetes Service. It gives you a service that other pods within the cluster can access. There's no external access.
+
+stays within the cluster 
+You can still access ClusterIP Service from outside via Kubernetes Proxy
+
+Accessing Internal Services via ClusterIP and Kubernetes Proxy: 
+
+Note when you run 'minikube dashboard' it runs a kubectl proxy for 'kubernetes-dashboard' service within 'kubernetes-dashboard' namespace
+
+> kubectl proxy --port=8080  (Run a proxy to Kubernetes API server)
+> http://localhost:8080/api/v1/namespaces/default/services/my-apache-service
+> http://localhost:8080/api/v1/namespaces/default/services/http:my-apache-service:/proxy/  -> It works
+> http://localhost:8080/api/v1/namespaces/default/services/http:hello-node:/proxy/ -> Hello World!
+
+Note all the above are routed to K8 API server and not directly to the service 
+
+
+NodePort -> Most primitive service for getting external traffic directly to the service.
+
+stays on each node (VM) facing outside the cluster
+
+Not recommended for exposing production services 
+Opens specific port on all the Nodes (VMs) and any traffic sent to this port is forwarded to the service
+Diagram depicting the same https://www.ovh.com/blog/wp-content/uploads/2019/02/BDFD96AE-11F9-4079-B375-250FA40B7CE9.jpeg
+
+Access : <NodeIP>:<NodePort>
+
+
+Loadbalancer -> Most standard way to expose a service to internet 
+
+stays outside the cluster 
+Cloud provider's solution that provides an external IP
+load balances any type of request HTTP(s), TCP, UDP, Websockets, gRPC
+single ip address for every service
+each service you expose with a LB will get its own ip -> can get expensive
+
+Access : <LB IP>
+
+Ingress -> Not a Service, but a K8 object or API
+
+stays within the cluster
+load balances HTTP(s) requests only
+in front of multiple services within the cluster 
+acts as a 'smart router' foo.yourname.com -> foo service, yourname.com/bar -> bar service, everything else -> other service 
+Pay for only one load Loadbalancer
+
+Ingress exposed to internet via Proxy + ClusterIP, NodePort, or Loadbalancer
+
+Ingress controllers -> Nginx, Istio, Google cloud LB
+
+
+
